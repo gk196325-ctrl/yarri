@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yaari - Login & Setup</title>
+  
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Loading state design */
+    #loading-screen {
+      color: white;
+      font-size: 18px;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loading-screen">
+    <p>Loading Yaari...</p>
+  </div>
+
+  <div id="login-card" class="card" style="display: none;">
+    <img src="yarri.png" alt="Yaari Logo" height="200">
+    <h2><b>LOGIN</b></h2>
+    
+    <button class="google-btn" onclick="googleLogin()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
+      Continue with Google
+    </button>
+
+    <p id="msg"></p>
+  </div>
+
+  <div id="setup-card" class="card" style="display: none;">
+    <img src="yarri.png" alt="Yaari Logo" height="60">
+    <h2>Choose Username</h2>
+    <p style="font-size: 13px; color: #666;">Ek unique username chunein</p>
+    
+    <input type="text" id="username-input" placeholder="@username" 
+           style="width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; outline: none;">
+    
+    <button class="google-btn" onclick="saveUsername()" style="background: #ee0979; color: white; border: none; font-weight: bold;">
+      Finish Setup
+    </button>
+    
+    <p id="setup-msg"></p>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  
+  <script>
+    // 1. Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyARtxm64vkG1e9c07eaNTY8GLJMeICvbOo",
+      authDomain: "yarri-99021.firebaseapp.com",
+      projectId: "yarri-99021",
+      storageBucket: "yarri-99021.firebasestorage.app",
+      messagingSenderId: "469263009084",
+      appId: "1:469263009084:web:bbd075daaca7f0903fca39",
+      measurementId: "G-Q1LHWZVHGJ"
+    };
+    
+    // Initialize Firebase safely
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
+    // Elements Reference
+    const loadingScreen = document.getElementById("loading-screen");
+    const loginCard = document.getElementById("login-card");
+    const setupCard = document.getElementById("setup-card");
+    
+    // 2. Auth State Observer
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        // Check if user already exists in Firestore
+        db.collection("users").doc(user.uid).get().then((doc) => {
+          loadingScreen.style.display = "none"; // Hide loading once checked
+          
+          if (doc.exists && doc.data().username) {
+            // Setup completed, redirect to home
+            window.location.href = "home.html";
+          } else {
+            // New user or missing username, show Setup card
+            loginCard.style.display = "none";
+            setupCard.style.display = "block";
+          }
+        }).catch((err) => {
+          console.error("Error checking user doc: ", err);
+          loadingScreen.style.display = "none";
+          loginCard.style.display = "block"; // Fallback to login on error
+        });
+      } else {
+        // User is logged out, show Login card directly
+        loadingScreen.style.display = "none";
+        loginCard.style.display = "block";
+        setupCard.style.display = "none";
+      }
+    });
+    
+    // 3. Google Login Function
+    window.googleLogin = function() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const msgText = document.getElementById("msg");
+      msgText.style.color = "#333";
+      msgText.innerText = "Connecting to Google...";
+      
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          msgText.style.color = "green";
+          msgText.innerText = "Successfully authenticated! Checking profile...";
+        })
+        .catch((error) => {
+          console.error(error);
+          msgText.style.color = "red";
+          msgText.innerText = "Login failed: " + error.message;
+        });
+    }
+    
+    // 4. Save Username Function
+    window.saveUsername = function() {
+      const usernameInput = document.getElementById("username-input").value.trim().toLowerCase();
+      const setupMsg = document.getElementById("setup-msg");
+      
+      if (!usernameInput) {
+        setupMsg.style.color = "red";
+        setupMsg.innerText = "Please enter a username!";
+        return;
+      }
+      
+      const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/;
+      if (!usernameRegex.test(usernameInput)) {
+        setupMsg.style.color = "red";
+        setupMsg.innerText = "3-15 chars long, only letters, numbers & underscores allowed.";
+        return;
+      }
+      
+      setupMsg.style.color = "#666";
+      setupMsg.innerText = "Checking availability...";
+      
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        setupMsg.style.color = "red";
+        setupMsg.innerText = "Session expired. Please refresh and login again.";
+        return;
+      }
+      
+      // Check unique username
+      db.collection("users").where("username", "==", usernameInput).get()
+        .then((querySnapshot) => {
+          if (!querySnapshot.empty) {
+            setupMsg.style.color = "red";
+            setupMsg.innerText = "This username is already taken!";
+          } else {
+            // Save complete user object
+            db.collection("users").doc(currentUser.uid).set({
+                uid: currentUser.uid,
+                name: currentUser.displayName || "Yarri User",
+                email: currentUser.email,
+                photoURL: currentUser.photoURL || "profile.png",
+                username: usernameInput,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              })
+              .then(() => {
+                setupMsg.style.color = "green";
+                setupMsg.innerText = "Setup complete! Redirecting...";
+                setTimeout(() => {
+                  window.location.href = "home.html";
+                }, 1500);
+              })
+              .catch((err) => {
+                setupMsg.style.color = "red";
+                setupMsg.innerText = "Error saving: " + err.message;
+              });
+          }
+        }).catch((err) => {
+          setupMsg.style.color = "red";
+          setupMsg.innerText = "Database error: " + err.message;
+        });
+    }
+  </script>
+</body>
+</html>

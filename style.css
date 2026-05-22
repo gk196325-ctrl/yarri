@@ -1,0 +1,73 @@
+/* GLOBAL RESET FOR DISPLAY OVERFLOW FIX */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #ff6a00, #ee0979);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+.card {
+  background: linear-gradient(135deg, #ff6a00, #ee0979);
+  width: 90%;
+  max-width: 340px; /* Choti screens par screen se bahar nahi jayega */
+  padding: 30px 24px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.card h2 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+.google-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: 0.3s ease;
+}
+
+.google-btn:hover {
+  background: #f8f8f8;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#msg {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.profile-card {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.bottom-nav div:hover {
+  opacity: 0.7;
+}

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Yarri</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght={300;400;500;600;700}&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-modern@5/modern.css">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: #f3f4f9; padding-bottom: 90px; overflow-x: hidden; width: 100%; color: #1e293b; transition: background 0.3s, color 0.3s; }
+
+    /* PREMIUM DARK MODE STYLES (Profile Premium Card Excluded for Fresh Light Feel) */
+    body.dark-mode { background: #0f172a !important; color: #f8fafc !important; }
+    body.dark-mode .navbar, 
+    body.dark-mode .stories-section-container, 
+    body.dark-mode .create-post, 
+    body.dark-mode .post-card, 
+    body.dark-mode .chat-header,
+    body.dark-mode #profile-back-nav,
+    body.dark-mode .chat-input-area { background: #1e293b !important; color: #f8fafc !important; border-color: #334155 !important; }
+    body.dark-mode .post-input, body.dark-mode .chat-input-field { background: #334155 !important; color: #fff !important; border-color: #475569 !important; }
+    body.dark-mode h4, body.dark-mode h3, body.dark-mode .status-tray h4 { color: #f1f5f9 !important; }
+
+    /* ULTRA MODERN SCROLLBAR */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 20px; }
+
+    /* NAVBAR MODERNIZED WITH RESPONSIVE FLEX */
+    .navbar { width: 100%; position: sticky; top: 0; z-index: 1000; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 30px rgba(0,0,0,0.03); border-bottom: 1px solid rgba(255,255,255,0.4); box-sizing: border-box; }
+    .logo { font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #ff00cc, #7b2ff7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px; flex-shrink: 0; }
+    .top-icons { display: flex; align-items: center; gap: 10px; max-width: 70%; flex-wrap: nowrap; }
+    .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #f1f5f9; flex-shrink: 0; }
+    .icon-btn:hover { background: #f8fafc; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(123, 47, 247, 0.12); }
+    .badge { position: absolute; top: -4px; right: -4px; background: #ff2a74; color: white; font-size: 11px; padding: 2px 7px; border-radius: 20px; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 6px rgba(255,42,116,0.4); }
+
+    /* STORIES TRAY */
+    .stories-section-container { background: white; margin: 18px 14px; padding: 18px; border-radius: 26px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; box-sizing: border-box; }
+    .status-tray { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 6px; align-items: center; width: 100%; -webkit-overflow-scrolling: touch; }
+    .status-tray::-webkit-scrollbar { display: none; }
+    .status-card-trigger { display: flex; flex-direction: column; align-items: center; min-width: 68px; cursor: pointer; flex-shrink: 0; }
+    .add-status-circle { width: 64px; height: 64px; border-radius: 50%; border: 2.5px dashed #7b2ff7; display: flex; align-items: center; justify-content: center; background: #fdfcff; font-size: 26px; color: #7b2ff7; font-weight: 500; transition: 0.3s; }
+    .add-status-circle:hover { background: #f3ebff; transform: scale(0.96); }
+    .status-label { font-size: 11px; margin-top: 8px; color: #64748b; font-weight: 600; text-align: center; max-width: 75px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* TABS SYSTEM PRESETS */
+    .tab-content { display: none; width: 100%; animation: cubicBezierFadeIn 0.45s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; }
+    .tab-content.active { display: block; }
+    @keyframes cubicBezierFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* INPUT FEED BOX */
+    .create-post { background: white; margin: 18px 14px; border-radius: 26px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; box-sizing: border-box; }
+    .post-top { display: flex; align-items: center; gap: 14px; }
+    .post-top img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; flex-shrink: 0; }
+    .post-input { flex: 1; background: #f8fafc; border: 1px solid #f1f5f9; padding: 14px 22px; border-radius: 30px; outline: none; font-size: 14px; transition: 0.3s; color: #1e293b; font-weight: 500; min-width: 0; }
+    .post-input:focus { background: white; box-shadow: 0 0 0 2px rgba(123,47,247,0.15); border-color: #7b2ff7; }
+    .post-btn { margin-top: 16px; width: 100%; padding: 14px; border: none; border-radius: 18px; background: linear-gradient(135deg, #ff00cc, #7b2ff7); color: white; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 6px 20px rgba(123, 47, 247, 0.25); transition: 0.3s; }
+    .post-btn:hover { opacity: 0.95; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(123, 47, 247, 0.35); }
+
+    /* TIMELINE CARDS */
+    .feed { padding: 14px; display: flex; flex-direction: column; gap: 18px; width: 100%; box-sizing: border-box; }
+    .post-card { background: white; padding: 20px; border-radius: 26px; box-shadow: 0 8px 24px rgba(0,0,0,0.015); border: 1px solid #f1f5f9; width: 100%; word-wrap: break-word; word-break: break-word; box-sizing: border-box; overflow: hidden; }
+    .post-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .post-user-info { display: flex; align-items: center; gap: 12px; cursor: pointer; min-width: 0; }
+    .post-header img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    
+    .post-options-container { position: relative; flex-shrink: 0; }
+    .three-dots-trigger { background: none; border: none; font-size: 22px; cursor: pointer; color: #94a3b8; padding: 4px 12px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+    .three-dots-trigger:hover { background: #f1f5f9; color: #1e293b; }
+    
+    .options-dropdown-menu { display: none; position: absolute; top: 38px; right: 0; background: white; border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,0.09); border: 1px solid #f1f5f9; z-index: 100; min-width: 145px; overflow: hidden; animation: menuScale 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes menuScale { from { opacity: 0; transform: scale(0.94) translateY(-4px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .options-dropdown-menu.active { display: block; }
+    .dropdown-item { width: 100%; padding: 12px 18px; background: none; border: none; text-align: left; font-size: 13px; font-weight: 500; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.15s; }
+    .dropdown-item:hover { background: #f8fafc; color: #000; }
+
+    .post-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 14px; border-top: 1px solid #f1f5f9; flex-wrap: wrap; gap: 8px; }
+    .action-button { background: none; border: none; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748b; cursor: pointer; font-weight: 600; transition: 0.2s; padding: 8px 14px; border-radius: 14px; }
+    .action-button:hover { background: #f1f5f9; color: #1e293b; }
+    .action-button.liked { color: #ff00cc; background: rgba(255,0,204,0.05); }
+
+    /* TIMELINE COMMENTS ACCORDION */
+    .comments-section { margin-top: 16px; background: #f8fafc; border-radius: 20px; padding: 16px; border: 1px solid #f1f5f9; display: none; box-sizing: border-box; }
+    .comment-input-row { display: flex; gap: 12px; margin-bottom: 14px; align-items: center; width: 100%; }
+    .comment-input { flex: 1; padding: 12px 18px; border: 1px solid #e2e8f0; border-radius: 25px; outline: none; font-size: 13px; background: white; font-weight: 500; min-width: 0; }
+    .comment-submit-btn { background: #7b2ff7; color: white; border: none; padding: 11px 20px; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(123,47,247,0.15); flex-shrink: 0; }
+    .comments-list { display: flex; flex-direction: column; gap: 10px; max-height: 220px; overflow-y: auto; }
+    .single-comment { background: white; padding: 12px 16px; border-radius: 16px; font-size: 13px; border: 1px solid #f1f5f9; word-break: break-word; }
+
+    /* CLEAN LIGHT-THEME PROFILE CARD DESIGN (STRICTLY WHITE & PREMIUM) */
+    .profile-card-premium { 
+      background: #ffffff !important; /* Fixed White Background */
+      color: #0f172a !important;     /* Dark text for visibility */
+      margin: 20px 14px; 
+      border-radius: 32px; 
+      padding: 0 0 24px 0; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      text-align: center;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e2e8f0 !important;
+      position: relative;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .profile-avatar-wrapper { position: relative; margin-bottom: 14px; cursor: pointer; flex-shrink: 0; z-index: 15; }
+    .profile-ring { width: 96px; height: 96px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, #ff00cc, #7b2ff7); display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; }
+    .profile-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid white; background: white; }
+    
+    .edit-dp-badge { position: absolute; bottom: 2px; right: 2px; background: #7b2ff7; color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+    
+    .profile-card-premium h3 { font-size: 22px; font-weight: 700; color: #0f172a !important; margin-bottom: 2px; letter-spacing: -0.5px; }
+    .profile-card-premium p.username-handle { font-size: 13px; color: #7b2ff7 !important; font-weight: 600; margin-bottom: 10px; background: rgba(123, 47, 247, 0.06); padding: 3px 14px; border-radius: 20px; display: inline-block; }
+    
+    .profile-bio-container { font-size: 13px; color: #64748b !important; font-weight: 500; margin-bottom: 20px; width: 90%; line-height: 1.5; padding: 6px; border-radius: 8px; word-wrap: break-word; }
+    .profile-bio-container:hover { color: #1e293b !important; background: #f8fafc; }
+
+    .profile-stats-dashboard { 
+      display: flex; width: 90%; background: #f8fafc !important; padding: 14px; border-radius: 22px; 
+      border: 1px solid #edf2f7; justify-content: space-around; box-sizing: border-box;
+    }
+    .stat-box { text-align: center; flex: 1; cursor: pointer; transition: 0.2s; }
+    .stat-box span:first-child { font-size: 18px; font-weight: 700; color: #0f172a !important; display: block; }
+    .stat-box span:last-child { font-size: 11px; color: #64748b !important; font-weight: 600; text-transform: uppercase; margin-top: 2px; display: block; }
+    
+    /* PREMIUM 3-DOT CONTEXT DROP-DOWN MENU */
+    .premium-options-dropdown {
+      display: none;
+      position: absolute;
+      top: 55px;
+      right: 15px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      border: 1px solid #e2e8f0;
+      z-index: 1000;
+      min-width: 170px;
+      overflow: hidden;
+    }
+    .premium-dropdown-item {
+      width: 100%;
+      padding: 12px 16px;
+      background: none;
+      border: none;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .premium-dropdown-item:hover { background: #f8fafc; color: #000; }
+
+    /* OVERLAYS FULLSCREEN RESPONSIVE SPECIFICATION FIX */
+    #notification-screen, #personal-chat-window, #search-users-modal, #create-media-modal, #reels-video-container-screen, #profile-friends-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: -webkit-fill-available; background: #f8fafc; z-index: 2000; display: none; flex-direction: column; animation: slideUpSmooth 0.35s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; overflow: hidden; }
+    @keyframes slideUpSmooth { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    
+    .chat-header { padding: 18px 20px; background: white; font-weight: 700; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); color: #0f172a; flex-shrink: 0; width: 100%; box-sizing: border-box; }
+
+    /* REELS SCREEN */
+    #reels-video-container-screen { background: #000; z-index: 4000; height: 100vh; height: -webkit-fill-available; }
+    .reels-wrapper { flex: 1; overflow-y: scroll; snap-type: y mandatory; background: black; width: 100%; -webkit-overflow-scrolling: touch; }
+    .reel-single-snap { width: 100%; height: 100vh; height: -webkit-fill-available; snap-align: start; position: relative; display: flex; justify-content: center; align-items: center; background: #000; box-sizing: border-box; }
+    .reel-video-element { width: 100%; height: 100%; object-fit: contain; }
+    .reel-overlay-details { position: absolute; bottom: 95px; left: 18px; right: 18px; color: white; z-index: 10; text-shadow: 1px 1px 5px rgba(0,0,0,0.8); pointer-events: none; }
+
+    /* CHAT MESSAGES WINDOW SYSTEM OVERFLOW */
+    #chat-messages { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 12px; background: #f8fafc; padding-bottom: 100px; -webkit-overflow-scrolling: touch; box-sizing: border-box; }
+    .chat-input-area { position: absolute; bottom: 0; left: 0; width: 100%; background: white; padding: 16px 20px; display: flex; gap: 12px; align-items: center; border-top: 1px solid #f1f5f9; z-index: 2100; box-sizing: border-box; }
+    .chat-input-field { flex: 1; padding: 14px 20px; border: 1px solid #e2e8f0; border-radius: 25px; outline: none; background: #f8fafc; font-size: 14px; color:#1e293b; font-weight:500; min-width: 0; }
+    .chat-send-btn { background: linear-gradient(135deg, #ff00cc, #7b2ff7); color: white; border: none; height: 46px; padding: 0 24px; border-radius: 25px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(123, 47, 247, 0.2); white-space: nowrap; flex-shrink: 0; }
+
+    /* STORIES BOX VIEW BOX */
+    .story-viewer-interaction-footer { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.92)); padding: 24px 18px 35px; display: flex; flex-direction: column; gap: 14px; z-index: 5200; box-sizing: border-box; }
+    .story-actions-row { display: flex; align-items: center; gap: 14px; width: 100%; }
+    .story-comment-box { flex: 1; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 30px; padding: 12px 20px; color: white; font-size: 14px; outline: none; font-weight: 500; min-width: 0; }
+    .story-like-btn { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: none; width: 46px; height: 46px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .story-like-btn.liked { background: #ff00cc; }
+    .story-comments-display-scroller { max-height: 110px; overflow-y: auto; width: 100%; display: flex; flex-direction: column; gap: 8px; -webkit-overflow-scrolling: touch; }
+    .story-single-comment-bubble { font-size: 12px; color: rgba(255, 255, 255, 0.95); background: rgba(255, 255, 255, 0.12); padding: 8px 14px; border-radius: 12px; align-self: flex-start; max-width: 85%; backdrop-filter: blur(5px); word-break: break-word; }
+
+    /* NAVIGATION BAR BOTTOM */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 72px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(0,0,0,0.03); z-index: 1000; box-shadow: 0 -8px 30px rgba(0,0,0,0.03); padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; }
+    .bottom-icon { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 18px; transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1); color: #64748b; flex-shrink: 0; }
+    .bottom-icon.active { background: rgba(123, 47, 247, 0.08); color: #7b2ff7; }
+    .bottom-icon img { filter: grayscale(1) opacity(0.6); transition: 0.2s; }
+    .bottom-icon.active img { filter: grayscale(0) opacity(1); }
+    .profile-nav { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; transition: 0.2s; filter: none !important; opacity: 1 !important; }
+    .bottom-icon.active .profile-nav { border-color: #7b2ff7; box-shadow: 0 4px 10px rgba(123,47,247,0.25); }
+    
+    #post-media-preview-container { display:none; position:relative; margin: 10px 0; width: 100%; }
+    #clear-media-preview { position:absolute; right:10px; top:10px; background:rgba(0,0,0,0.6); color:#fff; padding:4px 9px; border-radius:50%; cursor:pointer; font-size:12px; z-index:10; font-weight:bold; }
+    #post-img-preview, #post-video-preview { width:100%; max-height:250px; object-fit:cover; border-radius:14px; }
+    #user-profile-cover-banner-display { width:100%; height:150px; background:#cbd5e1; position:relative; background-size:cover; background-position:center; }
+  </style>
+</head>
+<body>
+
+  <div class="navbar" id="main-navbar">
+    <div class="logo">YARRI</div>
+    <div class="top-icons">
+      <div class="icon-btn" onclick="window.openSearchUsersModal()">
+        <img src="https://img.icons8.com/ios-filled/50/search--v1.png" height="19">
+      </div>
+      <div class="icon-btn" onclick="openNotifications()">
+        <img src="https://img.icons8.com/ios-filled/50/alarm.png" height="20">
+        <div class="badge" id="noti-badge">0</div>
+      </div>
+      <div class="icon-btn" onclick="switchTab('friends')">
+        <img src="https://img.icons8.com/ios-filled/50/conference-call.png" height="19">
+      </div>
+      <div class="icon-btn" onclick="switchTab('chat')">
+        <img src="https://img.icons8.com/ios-filled/50/speech-bubble.png" height="19">
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-home" class="tab-content active">
+    <div class="stories-section-container">
+      <h4 style="margin-bottom: 12px; color: #334155; font-size: 13px; font-weight: 700; letter-spacing: 0.3px;">Recent Status Updates 🎬</h4>
+      <div class="status-tray" id="stories-dynamic-tray">
+        <div class="status-card-trigger" onclick="document.getElementById('story-media-file').click()">
+          <div class="add-status-circle">+</div>
+          <span class="status-label">Your Story</span>
+          <input type="file" id="story-media-file" accept="image/*,video/*" style="display: none;" onchange="uploadDynamicUserStory(event)">
+        </div>
+        <div id="dynamic-stories-list" style="display: flex; gap: 14px;"></div>
+      </div>
+    </div>
+
+    <div class="create-post">
+      <div class="post-top">
+        <img src="profile.png" class="user-current-dp">
+        <textarea id="post-text-input" class="post-input" placeholder="Kya chal raha hai aapke dimaag mein, bhai?" style="height: 50px; resize: none; border-radius: 18px; padding: 12px 18px; font-family: inherit;"></textarea>
+      </div>
+
+      <div id="post-media-preview-container">
+        <span id="clear-media-preview">X</span>
+        <img id="post-img-preview" style="display:none;">
+        <video id="post-video-preview" style="display:none;" controls></video>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:10px; border-top:1px solid #f1f5f9;">
+        <label style="cursor:pointer; display:flex; align-items:center; gap:6px; color:#7b2ff7; font-size:13px; font-weight:600;">
+          📷 Attach Photo / Video
+          <input type="file" id="post-media-file" accept="image/*,video/*" style="display:none;" onchange="handlePostMediaSelect(event)">
+        </label>
+        <button class="post-btn" onclick="createNewAdvancedPost()" style="margin-top:0; width:auto; padding:8px 22px; border-radius:20px;">Publish</button>
+      </div>
+    </div>
+    
+    <div id="bookmark-indicator-btn" onclick="toggleSavedPostsView()" style="cursor:pointer; display:flex; align-items:center; gap:5px; margin: 0 16px 10px; font-size:12px; color:#64748b; font-weight:600;">
+      <span>🔖 View Saved Posts</span>
+    </div>
+
+    <div class="feed" id="global-feed"></div>
+  </div>
+
+  <div id="tab-friends" class="tab-content">
+    <div style="padding: 18px; background: white; font-weight: 700; border-bottom: 1px solid #f1f5f9; text-align: center; font-size:15px; color:#0f172a;">Yarri Global Network 👥</div>
+    <div id="friends-list-container" style="padding: 14px; display: flex; flex-direction: column; gap: 12px; width: 100%;"></div>
+  </div>
+
+  <div id="tab-chat" class="tab-content">
+    <div id="chat-users-list">
+      <div style="padding: 18px; background: white; font-weight: 700; border-bottom: 1px solid #f1f5f9; text-align: center; font-size:15px; color:#0f172a;">Direct Messages 💬</div>
+      <div id="users-container" style="padding: 14px; display: flex; flex-direction: column; gap: 12px; width: 100%;"></div>
+    </div>
+
+    <div id="personal-chat-window" style="display: none;">
+      <div class="chat-header" style="justify-content: space-between;">
+        <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+          <button onclick="closePersonalChat()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: #7b2ff7;">⬅</button>
+          <img id="active-chat-user-dp" src="profile.png" style="width:38px; height:38px; border-radius:50%; object-fit:cover; flex-shrink:0;">
+          <div style="min-width:0;">
+            <span id="chatting-with-username" style="font-weight:700; display:block; overflow:hidden; text-overflow:ellipsis;">Chatbox</span>
+            <span id="chat-typing-status-indicator" style="font-size:11px; color:#22c55e; display:none; font-style:italic;">typing...</span>
+          </div>
+        </div>
+        <button onclick="blockCurrentChatTargetUser()" style="background:none; border:none; color:#ef4444; font-size:12px; cursor:pointer; font-weight:600; flex-shrink:0;">Block User</button>
+      </div>
+      
+      <div id="chat-messages"></div>
+      
+      <div id="media-preview" style="position: absolute; bottom: 80px; left: 15px; background: rgba(255,255,255,0.95); padding: 8px 14px; border-radius: 14px; color: #7b2ff7; font-size: 12px; display: none; z-index: 2200; box-shadow:0 4px 14px rgba(0,0,0,0.08); font-weight:600;"></div>
+      
+      <div class="chat-input-area">
+        <input type="file" id="chat-file" accept="image/*,video/*" style="display: none;" onchange="showMediaPreview()">
+        <button onclick="document.getElementById('chat-file').click()" style="background: #f1f5f9; border: none; padding: 10px; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">📎</button>
+        
+        <input type="text" id="chat-input" class="chat-input-field" placeholder="Kuch baat karo..." oninput="broadcastTypingStateStatusToServer()">
+        <button onclick="sendChatMessage()" class="chat-send-btn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-profile" class="tab-content">
+    <div id="profile-back-nav" style="padding: 14px; display: none; background: white;">
+      <button onclick="switchTab('home')" style="background:none; border:none; font-size:14px; color:#7b2ff7; cursor:pointer; font-weight:700; display:flex; align-items:center; gap:5px;">⬅ Back to Feed</button>
+    </div>
+    
+    <div class="profile-card-premium">
+      <div id="user-profile-cover-banner-display">
+        <button onclick="togglePremiumProfileMenu(event)" style="position: absolute; top: 15px; right: 15px; background: rgba(255, 255, 255, 0.9); border: none; font-size: 20px; cursor: pointer; color: #1e293b; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 50;">
+          &#8942;
+        </button>
+
+        <div id="premium-profile-dropdown" class="premium-options-dropdown">
+          <label class="premium-dropdown-item" style="margin:0; cursor:pointer;">
+            <input type="checkbox" id="profile-account-privacy-toggle" onchange="commitAccountPrivacyModeToggle(event)" style="margin-right: 4px;"> 🔐 Private Account
+          </label>
+          <hr style="border:0; border-top:1px solid #f1f5f9; margin:4px 0;">
+          <button onclick="toggleThemeEngineMode()" class="premium-dropdown-item">🌓 Toggle Theme</button>
+          <hr style="border:0; border-top:1px solid #f1f5f9; margin:4px 0;">
+          <button onclick="firebase.auth().signOut()" class="premium-dropdown-item" style="color: #ef4444;">🚪 Log Out Account</button>
+        </div>
+
+        <label style="position:absolute; left:15px; bottom:15px; background:rgba(0,0,0,0.6); color:#fff; padding:6px 12px; border-radius:8px; font-size:11px; cursor:pointer; font-weight:600; z-index:10;">
+          📷 Cover
+          <input type="file" id="user-cover-file-input" accept="image/*" style="display:none;" onchange="uploadUserProfileCoverBanner(event)">
+        </label>
+      </div>
+
+      <div style="display:flex; justify-content:flex-start; width:100%; padding:0 20px; margin-top:-45px; position:relative; z-index:15;">
+        <div class="profile-avatar-wrapper" id="profile-dp-trigger-zone">
+          <div class="profile-ring"><img src="profile.png" id="profile-tab-dp"></div>
+          <div class="edit-dp-badge" id="profile-dp-edit-icon-indicator">📷</div>
+          <input type="file" id="profile-dp-file-uploader" accept="image/*" style="display: none;" onchange="window.handleProfilePictureUpload(this)">
+          <span id="profile-verification-badge-element" style="position:absolute; bottom:2px; left:2px; background:#3b82f6; color:#fff; border-radius:50%; width:20px; height:20px; display:none; align-items:center; justify-content:center; font-size:11px; font-weight:bold; border:2px solid #fff; z-index:20;">✓</span>
+        </div>
+      </div>
+
+      <div style="text-align:left; width:100%; margin-top:12px; padding:0 20px;">
+        <h3 id="profile-tab-name">Loading...</h3>
+        <p id="profile-tab-handle" class="username-handle">@username</p>
+      </div>
+      
+      <div id="profile-tab-bio" class="profile-bio-container empty-bio" onclick="window.triggerBioUpdateFlow()">Tap here to add your bio...</div>
+      
+      <div class="profile-stats-dashboard">
+        <div class="stat-box">
+          <span id="stats-posts-count">0</span>
+          <span>Posts</span>
+        </div>
+        <div class="stat-box clickable-friends-stat" id="friends-stat-click-box">
+          <span id="stats-friends-count">0</span>
+          <span>Friends</span>
+        </div>
+      </div>
+      
+      <div id="profile-friend-action-container" style="width: 90%; display: none; margin-top: 15px;"></div>
+    </div>
+    
+    <h4 id="profile-feed-title" style="margin: 24px 16px 8px; color: #334155; font-weight:700; font-size:14px; letter-spacing:0.2px;">My Personal Feed Timeline</h4>
+    <div class="feed" id="my-personal-feed"></div>
+  </div>
+
+  <div id="profile-friends-modal">
+    <div class="chat-header">
+      <button onclick="window.closeProfileFriendsModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: #7b2ff7;">⬅</button>
+      <span id="friends-modal-title" style="font-weight:700;">Connections List 👥</span>
+    </div>
+    <div id="profile-friends-list-container" style="padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1;"></div>
+  </div>
+
+  <div id="notification-screen">
+    <div class="chat-header">
+      <button onclick="closeNotifications()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: #7b2ff7;">⬅</button>
+      <span style="font-weight:700;">Notification Logs Center 🔔</span>
+    </div>
+    <div id="notifications-list" style="padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1;"></div>
+  </div>
+
+  <div id="search-users-modal" style="display: none; flex-direction: column;">
+    <div class="chat-header">
+      <button onclick="window.closeSearchUsersModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: #7b2ff7;">⬅</button>
+      <span style="font-weight:700;">Search Network Users 🔍</span>
+    </div>
+    <div style="padding: 14px 16px; background: white; border-bottom:1px solid #f1f5f9; flex-shrink: 0;">
+      <input type="text" id="network-search-input-box" placeholder="Enter username..." oninput="window.loadGlobalUsersViewPanel(this.value)" style="width:100%; padding:12px 20px; border:1px solid #e2e8f0; border-radius:25px; outline:none; font-size:14px; background:#f8fafc; transition:0.3s; font-weight:500;">
+    </div>
+    <div id="search-results-container" style="padding: 12px; display: flex; flex-direction: column; gap: 10px; width: 100%; overflow-y:auto; flex:1;"></div>
+  </div>
+
+  <div id="create-media-modal">
+    <div class="chat-header">
+      <button onclick="window.closeCreateMediaModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: #7b2ff7;">⬅</button>
+      <span style="font-weight:700;">Create Modern Post 🚀</span>
+    </div>
+    <div style="padding: 20px; display:flex; flex-direction:column; gap:18px; overflow-y: auto; flex: 1;">
+      <textarea id="modal-post-text" placeholder="Share something premium with the community..." style="width:100%; height:130px; border:1px solid #e2e8f0; border-radius:18px; padding:16px; outline:none; font-family:inherit; resize:none; font-size:14px; background:#f8fafc; color:#1e293b; font-weight:500; flex-shrink: 0;"></textarea>
+      
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap: wrap;">
+        <input type="file" id="modal-post-file" accept="image/*,video/*" style="display:none;" onchange="window.updateMediaModalAttachmentPreview()">
+        <button onclick="document.getElementById('modal-post-file').click()" style="background:#f1f5f9; border:none; padding:12px 22px; border-radius:14px; font-weight:700; font-size:13px; cursor:pointer; color:#7b2ff7;">📎 Attach Image/Video</button>
+        <span id="modal-attachment-label" style="font-size:12px; color:#64748b; font-weight:600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">No file attached</span>
+      </div>
+      
+      <button onclick="window.submitPremiumMediaPost()" style="background: linear-gradient(135deg, #ff00cc, #7b2ff7); color:white; border:none; padding:14px; border-radius:16px; font-weight:700; cursor:pointer; box-shadow:0 4px 15px rgba(123,47,247,0.2); margin-top:10px; flex-shrink: 0;">Publish Post</button>
+    </div>
+  </div>
+
+  <div id="reels-video-container-screen">
+    <div style="position: absolute; top: 16px; left: 16px; display: flex; align-items: center; gap: 10px; z-index: 4500; pointer-events:none;">
+      <div class="logo" style="font-size:24px; filter: drop-shadow(0px 2px 5px rgba(0,0,0,0.6));">Yarri Shorts</div>
+    </div>
+    <button onclick="window.closeReelsVideoWorldScreen()" style="position: absolute; top: 16px; right: 16px; background: rgba(0,0,0,0.5); border: none; color: white; font-size: 22px; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; z-index: 4500; backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center;">✕</button>
+    <div class="reels-wrapper" id="reels-scrolling-node-wrapper"></div>
+  </div>
+
+  <div id="status-viewer-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 5000; display: none; flex-direction: column; justify-content: center; align-items: center;" onclick="window.closeStatusViewerOutsideClick(event)">
+    <div style="position: absolute; top: 18px; left: 18px; display: flex; align-items: center; gap: 12px; z-index: 5100;">
+      <img src="profile.png" id="viewer-status-user-dp" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid white; object-fit: cover;">
+      <strong id="viewer-status-username" style="color: white; font-size: 15px; text-shadow: 1px 1px 4px rgba(0,0,0,0.9);">@Username</strong>
+    </div>
+    <video id="viewer-status-video-player" style="width: 100%; max-height: 100vh; object-fit: contain;" playsinline></video>
+    <div class="story-viewer-interaction-footer" onclick="event.stopPropagation()">
+      <div class="story-comments-display-scroller" id="story-comments-box-area"></div>
+      <div class="story-actions-row">
+        <input type="text" id="story-reply-msg-field" class="story-comment-box" placeholder="Reply to story..." onkeypress="window.submitStoryCommentEngine(event)">
+        <button id="story-like-toggle-heart" class="story-like-btn" onclick="window.toggleStoryLikeEngine()">❤️</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="bottom-icon active" onclick="switchTab('home')"><img src="https://img.icons8.com/material-rounded/24/home.png" height="24"></div>
+    <div class="bottom-icon" onclick="window.openCreateMediaModal()"><img src="https://img.icons8.com/ios-glyphs/30/plus-math.png" height="24"></div>
+    <div class="bottom-icon" onclick="window.openReelsVideoWorldScreen()"><img src="https://img.icons8.com/ios-filled/50/play.png" height="24"></div>
+    <div class="bottom-icon" onclick="switchTab('profile')"><img src="profile.png" class="profile-nav" id="nav-profile-img"></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <script src="home.js"></script>
+
+  <script>
+    window.togglePremiumProfileMenu = function(event) {
+      event.stopPropagation();
+      const dropdown = document.getElementById("premium-profile-dropdown");
+      if (dropdown.style.display === "block") {
+        dropdown.style.display = "none";
+      } else {
+        dropdown.style.display = "block";
+        document.addEventListener("click", closePremiumMenuOutside);
+      }
+    };
+
+    function closePremiumMenuOutside(e) {
+      const dropdown = document.getElementById("premium-profile-dropdown");
+      if (dropdown && !dropdown.contains(e.target)) {
+        dropdown.style.display = "none";
+        document.removeEventListener("click", closePremiumMenuOutside);
+      }
+    }
+
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        db.collection("users").doc(user.uid).get().then((doc) => {
+          if (doc.exists) {
+            const userPhoto = doc.data().photoURL || user.photoURL || "profile.png";
+            document.querySelectorAll('.user-current-dp').forEach(img => img.src = userPhoto);
+            
+            const navImg = document.getElementById("nav-profile-img");
+            if(navImg) navImg.src = userPhoto;
+            
+            const profTabImg = document.getElementById("profile-tab-dp");
+            if(profTabImg) profTabImg.src = userPhoto;
+
+            if (doc.data().coverURL) {
+              document.getElementById("user-profile-cover-banner-display").style.backgroundImage = `url('${doc.data().coverURL}')`;
+            }
+            if (doc.data().isPrivate) {
+              document.getElementById("profile-account-privacy-toggle").checked = true;
+            }
+            if (doc.data().isVerified) {
+              document.getElementById("profile-verification-badge-element").style.display = "flex";
+            }
+            
+            if (typeof syncFriendsCache === "function") syncFriendsCache();
+            if (typeof listenToNotifications === "function") listenToNotifications();
+          } else { 
+            window.location.href = "index.html"; 
+          }
+        }).catch((err) => {
+          console.error("Firestore read exception:", err);
+        });
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+</body>
+</html>
